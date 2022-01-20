@@ -8,6 +8,19 @@ const app = express();
 
 const port = process.env.PORT || 3000;
 
+// app.use((req, res, next) => {
+//     if(req.method==='GET'){
+//         res.send("GET requests are disabled");
+//     }else{
+//         next();
+//     }
+// });
+
+// app.use((req, res, next) => {
+//     if(req.method) res.status(503).send("Server is disabled now");
+
+// });
+
 app.use(express.json());
 app.use(userRouter);
 app.use(taskRouter);

@@ -19,11 +19,11 @@ router.post("/tasks",auth, async (req, res) => {
     }
 });
 
+
 // GET /tasks?completed=false
-// GET /tasks?limit=10&skip=10 
 //list of all tasks auth users
 router.get("/tasks",auth, async (req,res)=>{
-    match = {};
+    const match = {};
     if(req.query.completed) {
         match.completed = req.query.completed === "true";
     }
@@ -35,7 +35,6 @@ router.get("/tasks",auth, async (req,res)=>{
             });
         res.send(req.user.tasks);
     }catch (err){
-        console.log(err.message);
         res.status(500).send();
     }
 });

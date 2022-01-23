@@ -1,6 +1,7 @@
 const express = require('express');
 const Task = require("../models/task");
 const auth = require('../middleware/auth');
+const SearchOptions = require('../middleware/searchOptions');
 const router=new express.Router();
 
 //creating task
@@ -18,20 +19,23 @@ router.post("/tasks",auth, async (req, res) => {
     }
 });
 
-
 // GET /tasks?completed=false
+// GET /tasks?limit=10&skip=10 
 //list of all tasks auth users
 router.get("/tasks",auth, async (req,res)=>{
-    const match = {};
+    match = {};
     if(req.query.completed) {
         match.completed = req.query.completed === "true";
     }
     try{
-        const tasks = await Task.find({created_by:req.user._id,completed:match.completed});
-        //await req.user.populate('tasks').execPopulate();
-        //res.send(req.user.tasks);
-        res.status(302).send(tasks);
+        await req.user.populate({
+            path:"tasks",
+            ...new SearchOptions(req.query),
+            match 
+            });
+        res.send(req.user.tasks);
     }catch (err){
+        console.log(err.message);
         res.status(500).send();
     }
 });

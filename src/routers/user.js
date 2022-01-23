@@ -1,8 +1,9 @@
 const express = require('express');
+const sharp = require('sharp');
 const User = require("../models/user");
 const auth = require('../middleware/auth');
+const fileUpload = require('../middleware/fileUpload');
 const router=new express.Router();
-
 
 
 //create user
@@ -92,5 +93,39 @@ router.delete('/users/me',auth,async (req, res)=>{
     }
 });
 
+//Uploading avatar image
+router.post('/users/me/avatar',auth,fileUpload.single("avatar"), async (req, res)=>{
+    const buffer = await sharp(req.file.buffer).resize({width:250,height:250}).png().toBuffer();
+    req.user.avatar=buffer;
+    await req.user.save();
+    res.send();
+},(err,req,res,next)=>{
+    res.status(404).send({error:err.message});
+});
+
+
+router.delete('/users/me/avatar',auth, async (req, res)=>{
+    try {
+        req.user.avatar = undefined;
+        await req.user.save();
+        res.status(200).send();
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+
+router.get('/users/:id/avatar',async (req, res)=>{
+    try {
+        const user = await User.findById(req.params.id);
+        if(!user || !user.avatar){
+            throw new Error();
+        }
+        res.set('Content-Type', 'image/jpg');
+        res.send(user.avatar);
+    } catch (err) {
+        res.status(404).send();
+    }
+});
 
 module.exports = router;
